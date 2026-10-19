@@ -38,21 +38,26 @@ ipcMain.handle('send-request', async (_event, { method, url, headers, body }) =>
   }
 });
 
-// ---- Saved requests (persisted as JSON in the user data folder) ----
-const storePath = () => path.join(app.getPath('userData'), 'saved-requests.json');
+// ---- JSON storage in the user data folder ----
+const dataPath = (name) => path.join(app.getPath('userData'), name);
 
-ipcMain.handle('load-saved', () => {
+function readJson(name) {
   try {
-    return JSON.parse(fs.readFileSync(storePath(), 'utf8'));
+    return JSON.parse(fs.readFileSync(dataPath(name), 'utf8'));
   } catch {
     return [];
   }
-});
+}
 
-ipcMain.handle('save-saved', (_event, list) => {
-  fs.writeFileSync(storePath(), JSON.stringify(list, null, 2));
+function writeJson(name, data) {
+  fs.writeFileSync(dataPath(name), JSON.stringify(data, null, 2));
   return true;
-});
+}
+
+ipcMain.handle('load-saved', () => readJson('saved-requests.json'));
+ipcMain.handle('save-saved', (_event, list) => writeJson('saved-requests.json', list));
+ipcMain.handle('load-history', () => readJson('history.json'));
+ipcMain.handle('save-history', (_event, list) => writeJson('history.json', list));
 
 app.whenReady().then(() => {
   createWindow();
