@@ -38,8 +38,12 @@
 
           <section class="panel">
             <div id="status-line"></div>
-            <h3>Response</h3>
+            <div class="tabs">
+              <button class="tab active" data-tab="body">Body</button>
+              <button class="tab" data-tab="headers">Headers</button>
+            </div>
             <pre id="response">Send a request to see the response.</pre>
+            <pre id="response-headers" class="hidden"></pre>
           </section>
         </main>
       </div>
