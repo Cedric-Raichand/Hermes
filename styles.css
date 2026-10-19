@@ -35,4 +35,16 @@ main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; paddin
 textarea { flex: 1; resize: none; font-family: monospace; }
 pre { flex: 1; margin: 0; padding: 10px; overflow: auto; background: #15151a;
       border: 1px solid #44444f; border-radius: 6px; white-space: pre-wrap; }
-#status-line { font-size: 13px; color: #9a9aa8; }
+
+/* Response status + tabs */
+#status-line { font-size: 13px; font-weight: 600; color: #9a9aa8; min-height: 20px; margin-bottom: 8px; }
+#status-line.ok { color: #55efc4; }
+#status-line.warn { color: #fdcb6e; }
+#status-line.err { color: #ff7675; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.tab { background: transparent; border: 1px solid #44444f; color: #9a9aa8; padding: 4px 14px; font-size: 13px; }
+.tab:hover { background: #2a2a33; }
+.tab.active { background: #6c5ce7; border-color: #6c5ce7; color: #fff; }
+
+.hidden { display: none; }
