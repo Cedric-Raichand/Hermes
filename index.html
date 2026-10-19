@@ -6,32 +6,44 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="request-bar">
-      <select id="method">
-        <option>GET</option>
-        <option>POST</option>
-        <option>PUT</option>
-        <option>PATCH</option>
-        <option>DELETE</option>
-      </select>
-      <input id="url" type="text" placeholder="https://api.example.com/users" />
-      <button id="send">Send</button>
-    </header>
+    <div class="app">
+      <aside class="sidebar">
+        <h2>Hermes</h2>
+        <h3>Saved requests</h3>
+        <div id="saved-list"></div>
+      </aside>
 
-    <main>
-      <section class="panel">
-        <h3>Headers (one per line, Key: Value)</h3>
-        <textarea id="headers" placeholder="Content-Type: application/json"></textarea>
-        <h3>Body</h3>
-        <textarea id="body" placeholder='{"name": "Hermes"}'></textarea>
-      </section>
+      <div class="workspace">
+        <header class="request-bar">
+          <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>PATCH</option>
+            <option>DELETE</option>
+          </select>
+          <input id="url" type="text" placeholder="https://api.example.com/users" />
+          <button id="send">Send</button>
+          <input id="name" type="text" placeholder="Name to save as" class="name-input" />
+          <button id="save" class="secondary">Save</button>
+        </header>
 
-      <section class="panel">
-        <div id="status-line"></div>
-        <h3>Response</h3>
-        <pre id="response">Send a request to see the response.</pre>
-      </section>
-    </main>
+        <main>
+          <section class="panel">
+            <h3>Headers (one per line, Key: Value)</h3>
+            <textarea id="headers" placeholder="Content-Type: application/json"></textarea>
+            <h3>Body</h3>
+            <textarea id="body" placeholder='{"name": "Hermes"}'></textarea>
+          </section>
+
+          <section class="panel">
+            <div id="status-line"></div>
+            <h3>Response</h3>
+            <pre id="response">Send a request to see the response.</pre>
+          </section>
+        </main>
+      </div>
+    </div>
 
     <script src="renderer.js"></script>
   </body>
