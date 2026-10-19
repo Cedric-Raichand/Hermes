@@ -3,7 +3,7 @@
 A lightweight desktop API client for testing HTTP requests, built with Electron. Named after the Greek messenger god.
 
 <p align="center">
-  <img src="screenshots/hermes.png" alt="Hermes screenshot" width="700">
+  <img src="screenshots/hermes.png" alt="Hermes screenshot" width="600">
 </p>
 
 ## Download
