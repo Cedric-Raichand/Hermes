@@ -12,13 +12,37 @@ function parseHeaders(text) {
   return headers;
 }
 
+function setStatus(text, level) {
+  const el = $('status-line');
+  el.textContent = text;
+  el.className = level || '';
+}
+
+function statusLevel(code) {
+  if (code >= 200 && code < 300) return 'ok';
+  if (code >= 300 && code < 400) return 'warn';
+  return 'err';
+}
+
+// ---- Response tabs ----
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    const showHeaders = tab.dataset.tab === 'headers';
+    $('response').classList.toggle('hidden', showHeaders);
+    $('response-headers').classList.toggle('hidden', !showHeaders);
+  });
+});
+
 // ---- Sending ----
-$('send').addEventListener('click', async () => {
+async function sendRequest() {
   const url = $('url').value.trim();
   if (!url) return;
 
   $('response').textContent = 'Sending...';
-  $('status-line').textContent = '';
+  $('response-headers').textContent = '';
+  setStatus('');
 
   const result = await window.hermes.sendRequest({
     method: $('method').value,
@@ -28,19 +52,32 @@ $('send').addEventListener('click', async () => {
   });
 
   if (!result.ok) {
-    $('status-line').textContent = `Failed after ${result.time} ms`;
+    setStatus(`Failed after ${result.time} ms`, 'err');
     $('response').textContent = result.error;
     return;
   }
 
-  $('status-line').textContent =
-    `${result.status} ${result.statusText}  ·  ${result.time} ms  ·  ${result.size} B`;
+  setStatus(
+    `${result.status} ${result.statusText}  ·  ${result.time} ms  ·  ${result.size} B`,
+    statusLevel(result.status)
+  );
+
+  $('response-headers').textContent = Object.entries(result.headers)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('\n');
 
   try {
     $('response').textContent = JSON.stringify(JSON.parse(result.body), null, 2);
   } catch {
     $('response').textContent = result.body;
   }
+}
+
+$('send').addEventListener('click', sendRequest);
+
+// Ctrl+Enter (or Cmd+Enter) sends from anywhere
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendRequest();
 });
 
 // ---- Saved requests ----
