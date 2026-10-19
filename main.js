@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -13,6 +14,7 @@ function createWindow() {
   win.loadFile('index.html');
 }
 
+// ---- Sending requests ----
 ipcMain.handle('send-request', async (_event, { method, url, headers, body }) => {
   const start = Date.now();
   try {
@@ -34,6 +36,22 @@ ipcMain.handle('send-request', async (_event, { method, url, headers, body }) =>
   } catch (err) {
     return { ok: false, error: err.message, time: Date.now() - start };
   }
+});
+
+// ---- Saved requests (persisted as JSON in the user data folder) ----
+const storePath = () => path.join(app.getPath('userData'), 'saved-requests.json');
+
+ipcMain.handle('load-saved', () => {
+  try {
+    return JSON.parse(fs.readFileSync(storePath(), 'utf8'));
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle('save-saved', (_event, list) => {
+  fs.writeFileSync(storePath(), JSON.stringify(list, null, 2));
+  return true;
 });
 
 app.whenReady().then(() => {
