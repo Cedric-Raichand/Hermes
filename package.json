@@ -1,15 +1,35 @@
 {
   "name": "hermes",
   "version": "1.0.0",
-  "description": "",
+  "description": "A lightweight API testing client",
   "main": "main.js",
- "scripts": {
-  "start": "electron ."
-},
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
   "keywords": [],
-  "author": "",
+  "author": "Your Name",
   "license": "ISC",
+  "build": {
+    "appId": "com.yourname.hermes",
+    "productName": "Hermes",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.js",
+      "styles.css"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
   "devDependencies": {
-    "electron": "^44.9.0"
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3"
   }
 }
