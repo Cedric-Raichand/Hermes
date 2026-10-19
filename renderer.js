@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 
 let saved = [];
+let params = []; // each: { enabled, key, value }
 
 // ---- Helpers ----
 function parseHeaders(text) {
@@ -24,15 +25,142 @@ function statusLevel(code) {
   return 'err';
 }
 
-// ---- Response tabs ----
-document.querySelectorAll('.tab').forEach((tab) => {
+// ---- Request tabs (Params / Headers / Body) ----
+document.querySelectorAll('.req-tab').forEach((tab) => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    document.querySelectorAll('.req-tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.pane').forEach((p) => p.classList.add('hidden'));
+    $(tab.dataset.pane).classList.remove('hidden');
+  });
+});
+
+// ---- Response tabs (Body / Headers) ----
+document.querySelectorAll('.resp-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.resp-tab').forEach((t) => t.classList.remove('active'));
     tab.classList.add('active');
     const showHeaders = tab.dataset.tab === 'headers';
     $('response').classList.toggle('hidden', showHeaders);
     $('response-headers').classList.toggle('hidden', !showHeaders);
   });
+});
+
+// ---- Query params <-> URL sync ----
+function splitUrl(url) {
+  const hashIdx = url.indexOf('#');
+  const hash = hashIdx >= 0 ? url.slice(hashIdx) : '';
+  const rest = hashIdx >= 0 ? url.slice(0, hashIdx) : url;
+  const qIdx = rest.indexOf('?');
+  const base = qIdx >= 0 ? rest.slice(0, qIdx) : rest;
+  const query = qIdx >= 0 ? rest.slice(qIdx + 1) : '';
+  return { base, query, hash };
+}
+
+function safeDecode(s) {
+  try {
+    return decodeURIComponent(s.replace(/\+/g, ' '));
+  } catch {
+    return s;
+  }
+}
+
+function parseQuery(query) {
+  if (!query) return [];
+  return query
+    .split('&')
+    .filter(Boolean)
+    .map((pair) => {
+      const i = pair.indexOf('=');
+      const key = i >= 0 ? pair.slice(0, i) : pair;
+      const value = i >= 0 ? pair.slice(i + 1) : '';
+      return { enabled: true, key: safeDecode(key), value: safeDecode(value) };
+    });
+}
+
+// Table -> URL
+function buildUrlFromParams() {
+  const { base, hash } = splitUrl($('url').value);
+  const query = params
+    .filter((p) => p.enabled && p.key)
+    .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
+    .join('&');
+  $('url').value = base + (query ? '?' + query : '') + hash;
+}
+
+// URL -> table (disabled rows are kept, since they aren't in the URL)
+function syncParamsFromUrl() {
+  const { query } = splitUrl($('url').value);
+  const disabled = params.filter((p) => !p.enabled);
+  params = [...parseQuery(query), ...disabled];
+  renderParams();
+}
+
+function renderParams() {
+  const table = $('params-table');
+  table.innerHTML = '';
+
+  if (params.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'No query params. Add one below, or type ?key=value in the URL.';
+    table.appendChild(empty);
+    return;
+  }
+
+  params.forEach((p, index) => {
+    const row = document.createElement('div');
+    row.className = 'param-row' + (p.enabled ? '' : ' disabled');
+
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.checked = p.enabled;
+    check.addEventListener('change', () => {
+      p.enabled = check.checked;
+      row.classList.toggle('disabled', !p.enabled);
+      buildUrlFromParams();
+    });
+
+    const key = document.createElement('input');
+    key.type = 'text';
+    key.placeholder = 'key';
+    key.value = p.key;
+    key.addEventListener('input', () => {
+      p.key = key.value;
+      buildUrlFromParams();
+    });
+
+    const value = document.createElement('input');
+    value.type = 'text';
+    value.placeholder = 'value';
+    value.value = p.value;
+    value.addEventListener('input', () => {
+      p.value = value.value;
+      buildUrlFromParams();
+    });
+
+    const del = document.createElement('button');
+    del.className = 'delete-param';
+    del.textContent = '×';
+    del.title = 'Remove';
+    del.addEventListener('click', () => {
+      params.splice(index, 1);
+      buildUrlFromParams();
+      renderParams();
+    });
+
+    row.append(check, key, value, del);
+    table.appendChild(row);
+  });
+}
+
+$('url').addEventListener('input', syncParamsFromUrl);
+
+$('add-param').addEventListener('click', () => {
+  params.push({ enabled: true, key: '', value: '' });
+  renderParams();
+  const keys = document.querySelectorAll('.param-row input[placeholder="key"]');
+  keys[keys.length - 1].focus();
 });
 
 // ---- Sending ----
@@ -128,6 +256,8 @@ function loadRequest(req) {
   $('headers').value = req.headers;
   $('body').value = req.body;
   $('name').value = req.name;
+  params = [];
+  syncParamsFromUrl();
 }
 
 $('save').addEventListener('click', async () => {
@@ -161,4 +291,5 @@ $('save').addEventListener('click', async () => {
 (async () => {
   saved = await window.hermes.loadSaved();
   renderSaved();
+  renderParams();
 })();
