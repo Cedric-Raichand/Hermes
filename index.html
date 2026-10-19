@@ -30,25 +30,17 @@
 
         <main>
           <section class="panel">
-            <div class="tabs">
-              <button class="tab req-tab active" data-pane="params-pane">Params</button>
-              <button class="tab req-tab" data-pane="headers-pane">Headers</button>
-              <button class="tab req-tab" data-pane="body-pane">Body</button>
-            </div>
-
-            <div id="params-pane" class="pane">
-              <div id="params-table"></div>
-              <button id="add-param" class="secondary add-btn">+ Add param</button>
-            </div>
-            <textarea id="headers" class="pane hidden" placeholder="One per line, e.g. Content-Type: application/json"></textarea>
-            <textarea id="body" class="pane hidden" placeholder='{"name": "Hermes"}'></textarea>
+            <h3>Headers (one per line, Key: Value)</h3>
+            <textarea id="headers" placeholder="Content-Type: application/json"></textarea>
+            <h3>Body</h3>
+            <textarea id="body" placeholder='{"name": "Hermes"}'></textarea>
           </section>
 
           <section class="panel">
             <div id="status-line"></div>
             <div class="tabs">
-              <button class="tab resp-tab active" data-tab="body">Body</button>
-              <button class="tab resp-tab" data-tab="headers">Headers</button>
+              <button class="tab active" data-tab="body">Body</button>
+              <button class="tab" data-tab="headers">Headers</button>
             </div>
             <pre id="response">Send a request to see the response.</pre>
             <pre id="response-headers" class="hidden"></pre>
