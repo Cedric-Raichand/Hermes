@@ -1,6 +1,9 @@
 const $ = (id) => document.getElementById(id);
 
+const HISTORY_LIMIT = 50;
+
 let saved = [];
+let history = [];
 let params = []; // each: { enabled, key, value }
 
 // ---- Helpers ----
@@ -24,6 +27,16 @@ function statusLevel(code) {
   if (code >= 300 && code < 400) return 'warn';
   return 'err';
 }
+
+// ---- Sidebar tabs (Saved / History) ----
+document.querySelectorAll('.side-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.side-tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    $('saved-list').classList.toggle('hidden', tab.dataset.list !== 'saved-list');
+    $('history-list').classList.toggle('hidden', tab.dataset.list !== 'history-list');
+  });
+});
 
 // ---- Request tabs (Params / Headers / Body) ----
 document.querySelectorAll('.req-tab').forEach((tab) => {
@@ -163,20 +176,87 @@ $('add-param').addEventListener('click', () => {
   keys[keys.length - 1].focus();
 });
 
+// ---- History ----
+async function addHistory(entry) {
+  history.unshift(entry);
+  history = history.slice(0, HISTORY_LIMIT);
+  await window.hermes.saveHistory(history);
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = $('history-list');
+  list.innerHTML = '';
+
+  if (history.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'No requests sent yet.';
+    list.appendChild(empty);
+    return;
+  }
+
+  const clear = document.createElement('button');
+  clear.className = 'secondary clear-btn';
+  clear.textContent = 'Clear history';
+  clear.addEventListener('click', async () => {
+    history = [];
+    await window.hermes.saveHistory(history);
+    renderHistory();
+  });
+  list.appendChild(clear);
+
+  history.forEach((entry) => {
+    const item = document.createElement('div');
+    item.className = 'saved-item';
+    item.title = `${entry.method} ${entry.url}\n${new Date(entry.id).toLocaleString()}`;
+
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = entry.method;
+
+    const label = document.createElement('span');
+    label.className = 'label';
+    label.textContent = entry.url;
+
+    const pill = document.createElement('span');
+    pill.className = 'status-pill ' + (entry.status ? statusLevel(entry.status) : 'err');
+    pill.textContent = entry.status || 'ERR';
+
+    item.addEventListener('click', () => loadRequest(entry));
+    item.append(badge, label, pill);
+    list.appendChild(item);
+  });
+}
+
 // ---- Sending ----
 async function sendRequest() {
   const url = $('url').value.trim();
   if (!url) return;
+
+  const req = {
+    method: $('method').value,
+    url,
+    headers: $('headers').value,
+    body: $('body').value,
+  };
 
   $('response').textContent = 'Sending...';
   $('response-headers').textContent = '';
   setStatus('');
 
   const result = await window.hermes.sendRequest({
-    method: $('method').value,
-    url,
-    headers: parseHeaders($('headers').value),
-    body: $('body').value,
+    method: req.method,
+    url: req.url,
+    headers: parseHeaders(req.headers),
+    body: req.body,
+  });
+
+  addHistory({
+    id: Date.now(),
+    ...req,
+    status: result.ok ? result.status : null,
+    time: result.time,
   });
 
   if (!result.ok) {
@@ -250,12 +330,13 @@ function renderSaved() {
   });
 }
 
+// Used by both saved requests and history entries
 function loadRequest(req) {
   $('method').value = req.method;
   $('url').value = req.url;
-  $('headers').value = req.headers;
-  $('body').value = req.body;
-  $('name').value = req.name;
+  $('headers').value = req.headers || '';
+  $('body').value = req.body || '';
+  $('name').value = req.name || '';
   params = [];
   syncParamsFromUrl();
 }
@@ -290,6 +371,8 @@ $('save').addEventListener('click', async () => {
 // ---- Startup ----
 (async () => {
   saved = await window.hermes.loadSaved();
+  history = await window.hermes.loadHistory();
   renderSaved();
+  renderHistory();
   renderParams();
 })();
