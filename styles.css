@@ -3,9 +3,8 @@ body { margin: 0; font-family: system-ui, sans-serif; background: #1e1e24; color
 
 .app { display: flex; height: 100vh; }
 
-.sidebar { width: 240px; background: #17171c; border-right: 1px solid #33333d; padding: 12px; overflow-y: auto; }
+.sidebar { width: 260px; background: #17171c; border-right: 1px solid #33333d; padding: 12px; overflow-y: auto; }
 .sidebar h2 { margin: 0 0 12px; font-size: 18px; }
-.sidebar h3 { margin: 8px 0; font-size: 12px; color: #9a9aa8; text-transform: uppercase; }
 
 .saved-item { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; cursor: pointer; }
 .saved-item:hover { background: #2a2a33; }
@@ -14,6 +13,13 @@ body { margin: 0; font-family: system-ui, sans-serif; background: #1e1e24; color
 .saved-item .delete { background: none; padding: 0 6px; color: #9a9aa8; font-size: 16px; }
 .saved-item .delete:hover { color: #ff7675; background: none; }
 .empty { font-size: 13px; color: #6a6a78; padding: 8px; }
+
+.status-pill { font-size: 11px; font-weight: 600; color: #9a9aa8; }
+.status-pill.ok { color: #55efc4; }
+.status-pill.warn { color: #fdcb6e; }
+.status-pill.err { color: #ff7675; }
+
+.clear-btn { width: 100%; margin-bottom: 8px; padding: 6px; font-size: 12px; }
 
 .workspace { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .request-bar { display: flex; gap: 8px; padding: 12px; background: #2a2a33; }
