@@ -1,0 +1,17 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #1e1e24; color: #e8e8ee; }
+.request-bar { display: flex; gap: 8px; padding: 12px; background: #2a2a33; }
+#url { flex: 1; }
+input, select, textarea, button {
+  background: #1e1e24; color: inherit; border: 1px solid #44444f;
+  border-radius: 6px; padding: 8px; font: inherit;
+}
+button { background: #6c5ce7; border: none; cursor: pointer; padding: 8px 20px; }
+button:hover { background: #7d6ff0; }
+main { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; height: calc(100vh - 62px); }
+.panel { display: flex; flex-direction: column; min-height: 0; }
+.panel h3 { margin: 8px 0 4px; font-size: 13px; color: #9a9aa8; }
+textarea { flex: 1; resize: none; font-family: monospace; }
+pre { flex: 1; margin: 0; padding: 10px; overflow: auto; background: #15151a;
+      border: 1px solid #44444f; border-radius: 6px; white-space: pre-wrap; }
+#status-line { font-size: 13px; color: #9a9aa8; }

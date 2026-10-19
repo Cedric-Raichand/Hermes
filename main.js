@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 function createWindow() {
@@ -12,6 +12,29 @@ function createWindow() {
   });
   win.loadFile('index.html');
 }
+
+ipcMain.handle('send-request', async (_event, { method, url, headers, body }) => {
+  const start = Date.now();
+  try {
+    const options = { method, headers };
+    if (body && !['GET', 'HEAD'].includes(method)) options.body = body;
+
+    const res = await fetch(url, options);
+    const text = await res.text();
+
+    return {
+      ok: true,
+      status: res.status,
+      statusText: res.statusText,
+      time: Date.now() - start,
+      size: Buffer.byteLength(text),
+      headers: Object.fromEntries(res.headers.entries()),
+      body: text,
+    };
+  } catch (err) {
+    return { ok: false, error: err.message, time: Date.now() - start };
+  }
+});
 
 app.whenReady().then(() => {
   createWindow();
